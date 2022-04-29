@@ -41,10 +41,10 @@ class MyRidge:
         else:
             exit("Error")
 
-    def get_params(self):
-        return
+    def get_params_(self):
+        return self.__dict__
 
-    def set_params(self):
+    def set_params_(self):
         return
 
     def l2(self):
@@ -52,7 +52,7 @@ class MyRidge:
             ret = self.thetas[1:].T @ self.thetas[1:]
             return ret[0][0]
 
-    def loss(self, y, y_hat):
+    def loss_(self, y, y_hat):
         if (
             check_vector(y)
             and check_vector(y_hat)
@@ -76,7 +76,7 @@ class MyRidge:
             return x @ self.thetas
         return
 
-    def gradient(self, x, y):
+    def gradient_(self, x, y):
         if (
             check_vector(y)
             and check_matrix(x)
@@ -92,7 +92,7 @@ class MyRidge:
                 0
             ]
 
-    def fit(self, x, y):
+    def fit_(self, x, y):
         if (
             check_vector(y)
             and check_matrix(x)
@@ -121,17 +121,24 @@ if __name__ == "__main__":
     mr = MyRidge(theta)
     rr = Ridge(theta)
 
+    print("get_params\n")
+    print(mr.get_params_())
+
+    print("\nset_params\n")
+    print(mr.set_params_())
+    print(rr.set_params(max_iter=1e3))
+
     print("\nloss\n")
 
-    print(mr.loss(y, y_hat))
+    print(mr.loss_(y, y_hat))
     # Output: 0.8503571428571429
 
     mr.lambda_ = 0.05
-    print(mr.loss(y, y_hat))
+    print(mr.loss_(y, y_hat))
     # Output: 0.5511071428571429
 
     mr.lambda_ = 0.9
-    print(mr.loss(y, y_hat))
+    print(mr.loss_(y, y_hat))
     # Output: 1.116357142857143
 
     print("\nloss_elem_\n")
@@ -157,16 +164,16 @@ if __name__ == "__main__":
     print("\ngradient\n")
 
     mr.lambda_ = 1.0
-    print(mr.gradient(x, y))
+    print(mr.gradient_(x, y))
     # Output: np.array([[-60.99], [-195.64714286], [863.46571429], [-644.52142857]])
 
     mr.lambda_ = 0.5
-    print(mr.gradient(x, y))
+    print(mr.gradient_(x, y))
     # Output: np.array([[-60.99], [-195.86142857], [862.71571429], [-644.09285714]])
 
     mr.lambda_ = 0.0
-    print(mr.gradient(x, y))
+    print(mr.gradient_(x, y))
     # Output: np.array([[-60.99], [-196.07571429], [861.96571429], [-643.66428571]])
 
     print("\nfit\n")
-    print(mr.fit(x, y))
+    print(mr.fit_(x, y))
