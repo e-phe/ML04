@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
+import pprint
 
 def check_matrix(matrix):
     if isinstance(matrix, np.ndarray) and matrix.size != 0 and len(matrix.shape) == 2:
@@ -44,8 +44,9 @@ class MyRidge:
     def get_params_(self):
         return self.__dict__
 
-    def set_params_(self):
-        return
+    def set_params_(self, **kwargs):
+        self.__dict__.update(kwargs)
+        return type(self).__name__ + pprint.pformat(self.__dict__)
 
     def l2(self):
         if check_vector(self.thetas):
@@ -121,14 +122,14 @@ if __name__ == "__main__":
     mr = MyRidge(theta)
     rr = Ridge(theta)
 
-    print("get_params\n")
+    print("get_params")
     print(mr.get_params_())
 
-    print("\nset_params\n")
-    print(mr.set_params_())
-    print(rr.set_params(max_iter=1e3))
+    print("\nset_params")
+    print(mr.set_params_(max_iter=1000))
+    print(rr.set_params(max_iter=1000))
 
-    print("\nloss\n")
+    print("\nloss")
 
     print(mr.loss_(y, y_hat))
     # Output: 0.8503571428571429
@@ -141,7 +142,7 @@ if __name__ == "__main__":
     print(mr.loss_(y, y_hat))
     # Output: 1.116357142857143
 
-    print("\nloss_elem_\n")
+    print("\nloss_elem_")
     print(mr.loss_elem_(y, y_hat))
 
     x = np.array(
@@ -158,10 +159,10 @@ if __name__ == "__main__":
     y = np.array([[2], [14], [-13], [5], [12], [4], [-19]])
     mr.thetas = np.array([[7.01], [3], [10.5], [-6]])
 
-    print("\npredict\n")
+    print("\npredict")
     print(mr.predict_(x))
 
-    print("\ngradient\n")
+    print("\ngradient")
 
     mr.lambda_ = 1.0
     print(mr.gradient_(x, y))
@@ -175,5 +176,5 @@ if __name__ == "__main__":
     print(mr.gradient_(x, y))
     # Output: np.array([[-60.99], [-196.07571429], [861.96571429], [-643.66428571]])
 
-    print("\nfit\n")
+    print("\nfit")
     print(mr.fit_(x, y))
