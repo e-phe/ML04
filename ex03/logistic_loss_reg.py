@@ -34,6 +34,7 @@ def vec_log_loss_(y, y_hat, eps=1e-15):
             / y.shape[0]
         )
 
+
 def l2(theta):
     """Computes the L2 regularization of a non-empty numpy.array, without any for-loop.
     Args:
@@ -48,7 +49,6 @@ def l2(theta):
     if check_vector(theta):
         ret = theta[1:].T @ theta[1:]
         return ret[0][0]
-
 
 
 def reg_log_loss_(y, y_hat, theta, lambda_, eps=1e-15):
