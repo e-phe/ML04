@@ -43,7 +43,7 @@ def reg_logistic_grad(y, x, theta, lambda_):
     with two for-loops. The three arrays must have compatible shapes.
     Args:
     y: has to be a numpy.array, a vector of shape m * 1.
-    x: has to be a numpy.array, a matrix of dimesion m * n.
+    x: has to be a numpy.array, a matrix of dimension m * n.
     theta: has to be a numpy.array, a vector of shape (n + 1) * 1.
     lambda_: has to be a float.
     Return:
@@ -77,7 +77,7 @@ def vec_reg_logistic_grad(y, x, theta, lambda_):
     without any for-loop. The three arrays must have compatible shapes.
     Args:
     y: has to be a numpy.array, a vector of shape m * 1.
-    x: has to be a numpy.array, a matrix of dimesion m * n.
+    x: has to be a numpy.array, a matrix of dimension m * n.
     theta: has to be a numpy.array, a vector of shape (n + 1) * 1.
     lambda_: has to be a float.
     Return:
