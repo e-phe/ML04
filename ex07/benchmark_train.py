@@ -47,13 +47,19 @@ def add_polynomial_features(x, power):
     return
 
 
-def vander_matrix(x, y):
-    x_ = np.zeros(y.shape)
-    for x_train in x.T:
-        x_ = np.concatenate(
-            (x_, add_polynomial_features(x_train.reshape(-1, 1), i)), axis=1
-        )
-    return x_[:, 1:]
+def vander_matrix(x, y, power):
+    if (
+        check_matrix(x)
+        and check_vector(y)
+        and x.shape[0] == y.shape[0]
+        and isinstance(power, int)
+    ):
+        x_ = np.zeros(y.shape)
+        for x_train in x.T:
+            x_ = np.concatenate(
+                (x_, add_polynomial_features(x_train.reshape(-1, 1), power)), axis=1
+            )
+        return x_[:, 1:]
 
 
 if __name__ == "__main__":
@@ -70,17 +76,17 @@ if __name__ == "__main__":
     except:
         exit("FileNotFoundError")
 
-    (x, x_test, y, y_test) = data_spliter(data[:, 1:4], data[:, [4]], 0.7)
+    (x, x_test, y, y_test) = data_spliter(data[:, 1:4], data[:, [4]], 0.9)
+    (x, x_validation, y, y_validation) = data_spliter(x, y, 0.7)
 
-    figure, axis = plt.subplots(3, 4)
     alpha = 1
     theta = []
     mse_train = np.zeros((4, 6))
-    mse_test = np.zeros((4, 6))
+    mse_validation = np.zeros((4, 6))
     for i in range(1, 5):
         alpha *= 1e-7
         for j in range(6):
-            x_ = vander_matrix(x, y)
+            x_ = vander_matrix(x, y, i)
             my_lr = MyRidge(
                 np.ones(x_.shape[1] + 1).reshape(-1, 1), alpha, 10000, j / 5
             )
@@ -90,29 +96,17 @@ if __name__ == "__main__":
             theta.append(my_lr.fit_(x_, y).T[0])
             y_hat[:, :, j] = my_lr.predict_(x_)
 
-            x_test_ = vander_matrix(x_test, y_test)
+            x_validation_ = vander_matrix(x_validation, y_validation, i)
             mse_train[i - 1, j] = my_lr.mse_(x_, y)
-            mse_test[i - 1, j] = my_lr.mse_(x_test_, y_test)
-        x_name = [
-            "weight(in ton)",
-            "prod_distance (in Mkm)",
-            "time_delivery (in days)",
-        ]
-        for j in range(x.shape[1]):
-            axis[j, i - 1].set_xlabel(x_name[j])
-            axis[j, i - 1].set_ylabel("target (in trantorian unit)")
-            axis[j, i - 1].set_ylim([1e5, 1e6])
+            mse_validation[i - 1, j] = my_lr.mse_(x_validation_, y_validation)
 
-            axis[j, i - 1].scatter(x[:, j], y, label="dataset_train")
-            for k in range(6):
-                axis[j, i - 1].scatter(
-                    x[:, j],
-                    y_hat[:, :, k],
-                    marker=".",
-                    label="prediction lambda {}".format(k / 5),
-                )
-            axis[j, i - 1].legend()
-    plt.show()
+    (degree, lambda_) = np.where(mse_validation == np.min(mse_validation))
+    x_test_ = vander_matrix(x_test, y_test, int(degree[0]) + 1)
+    my_lr = MyRidge(
+        theta[degree[0] * 6 + lambda_[0]].reshape(-1, 1), alpha, 10000, lambda_[0] / 5
+    )
+    print("mse of the best model", my_lr.mse_(x_test_, y_test))
+    print("best hypothesis: degree", degree[0], "lambda", lambda_[0])
 
     plt.xlabel("polynomial degree")
     plt.ylabel("mse")
@@ -120,19 +114,36 @@ if __name__ == "__main__":
         plt.plot(
             np.arange(1, 5), mse_train[:, j], label="mse_train lambda {}".format(j / 5)
         )
-        plt.scatter(
-            np.arange(1, 5), mse_train[:, j], label="mse_train lambda {}".format(j / 5)
-        )
+        plt.scatter(np.arange(1, 5), mse_train[:, j])
         plt.plot(
-            np.arange(1, 5), mse_test[:, j], label="mse_test lambda {}".format(j / 5)
-        )
-        plt.scatter(
             np.arange(1, 5),
-            mse_test[:, j],
-            marker=".",
+            mse_validation[:, j],
             label="mse_test lambda {}".format(j / 5),
         )
+        plt.scatter(np.arange(1, 5), mse_validation[:, j])
     plt.legend()
     plt.show()
+
+    # x_name = [
+    #     "weight(in ton)",
+    #     "prod_distance (in Mkm)",
+    #     "time_delivery (in days)",
+    # ]
+    # figure, axis = plt.subplots(2, 3)
+    # for j in range(x.shape[1]):
+    #     axis[0, j].set_xlabel(x_name[j])
+    #     axis[0, j].set_ylabel("target (in trantorian unit)")
+    #     axis[0, j].set_ylim([1e5, 1e6])
+
+    #     axis[0, j].scatter(x[:, j], y, label="dataset_train")
+    #     for k in range(6):
+    #         axis[0, j].scatter(
+    #             x[:, j],
+    #             y_hat[:, :, k],
+    #             marker=".",
+    #             label="prediction lambda {}".format(k / 5),
+    #         )
+    #     axis[0, j].legend()
+    # plt.show()
 
     pd.DataFrame(theta).to_csv("models.csv", index=None)
