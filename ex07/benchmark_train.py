@@ -100,13 +100,14 @@ if __name__ == "__main__":
             mse_train[i - 1, j] = my_lr.mse_(x_, y)
             mse_validation[i - 1, j] = my_lr.mse_(x_validation_, y_validation)
 
-    (degree, lambda_) = np.where(mse_validation == np.min(mse_validation))
-    x_test_ = vander_matrix(x_test, y_test, int(degree[0]) + 1)
-    my_lr = MyRidge(
-        theta[degree[0] * 6 + lambda_[0]].reshape(-1, 1), alpha, 10000, lambda_[0] / 5
-    )
+    diff = abs(mse_train - mse_validation)
+    (degree, lambda_) = np.where(diff == np.min(diff))
+    (degree, lambda_) = (int(degree[0]), int(lambda_[0]))
+    print("best hypothesis: degree", degree, "lambda", lambda_ / 5)
+
+    x_test_ = vander_matrix(x_test, y_test, degree + 1)
+    my_lr = MyRidge(theta[degree * 6 + lambda_].reshape(-1, 1), lambda_=lambda_ / 5)
     print("mse of the best model", my_lr.mse_(x_test_, y_test))
-    print("best hypothesis: degree", degree[0], "lambda", lambda_[0])
 
     plt.xlabel("polynomial degree")
     plt.ylabel("mse")
@@ -124,26 +125,29 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
-    # x_name = [
-    #     "weight(in ton)",
-    #     "prod_distance (in Mkm)",
-    #     "time_delivery (in days)",
-    # ]
-    # figure, axis = plt.subplots(2, 3)
-    # for j in range(x.shape[1]):
-    #     axis[0, j].set_xlabel(x_name[j])
-    #     axis[0, j].set_ylabel("target (in trantorian unit)")
-    #     axis[0, j].set_ylim([1e5, 1e6])
+    x_name = [
+        "weight(in ton)",
+        "prod_distance (in Mkm)",
+        "time_delivery (in days)",
+    ]
+    figure, axis = plt.subplots(1, 3)
+    for i in range(x.shape[1]):
+        axis[i].set_xlabel(x_name[i])
+        axis[i].set_ylabel("target (in trantorian unit)")
+        axis[i].set_ylim([1e5, 1e6])
 
-    #     axis[0, j].scatter(x[:, j], y, label="dataset_train")
-    #     for k in range(6):
-    #         axis[0, j].scatter(
-    #             x[:, j],
-    #             y_hat[:, :, k],
-    #             marker=".",
-    #             label="prediction lambda {}".format(k / 5),
-    #         )
-    #     axis[0, j].legend()
-    # plt.show()
+        axis[i].scatter(x[:, i], y, label="dataset_train")
+        for j in range(6):
+            my_lr = MyRidge(theta[degree * 6 + lambda_].reshape(-1, 1), lambda_=j / 5)
+            y_hat = my_lr.predict_(x)
+
+            axis[i].scatter(
+                x[:, i],
+                y_hat,
+                marker=".",
+                label="prediction lambda {}".format(j / 5),
+            )
+        axis[i].legend()
+    plt.show()
 
     pd.DataFrame(theta).to_csv("models.csv", index=None)
