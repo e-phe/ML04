@@ -90,11 +90,7 @@ if __name__ == "__main__":
             my_lr = MyRidge(
                 np.ones(x_.shape[1] + 1).reshape(-1, 1), alpha, 10000, j / 5
             )
-            if j == 0:
-                y_hat = np.empty(y.shape + (6,))
-
             theta.append(my_lr.fit_(x_, y).T[0])
-            y_hat[:, :, j] = my_lr.predict_(x_)
 
             x_validation_ = vander_matrix(x_validation, y_validation, i)
             mse_train[i - 1, j] = my_lr.mse_(x_, y)
