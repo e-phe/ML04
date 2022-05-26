@@ -98,11 +98,13 @@ if __name__ == "__main__":
 
     diff = abs(mse_train - mse_validation)
     (degree, lambda_) = np.where(diff == np.min(diff))
-    (degree, lambda_) = (int(degree[0]), int(lambda_[0]))
-    print("best hypothesis: degree", degree + 1, "lambda", lambda_ / 5)
+    (degree, lambda_) = (int(degree[0] + 1), int(lambda_[0]))
+    print("best hypothesis: degree", degree, "lambda", lambda_ / 5)
 
-    x_test_ = vander_matrix(x_test, y_test, degree + 1)
-    my_lr = MyRidge(theta[degree * 6 + lambda_].reshape(-1, 1), lambda_=lambda_ / 5)
+    x_test_ = vander_matrix(x_test, y_test, degree)
+    my_lr = MyRidge(
+        theta[(degree - 1) * 6 + lambda_].reshape(-1, 1), lambda_=lambda_ / 5
+    )
     print("mse of the best model", my_lr.mse_(x_test_, y_test))
 
     plt.xlabel("polynomial degree")
@@ -134,7 +136,10 @@ if __name__ == "__main__":
 
         axis[i].scatter(x[:, i], y, label="dataset_train")
         for j in range(6):
-            my_lr = MyRidge(theta[degree * 6 + lambda_].reshape(-1, 1), lambda_=j / 5)
+            x_ = vander_matrix(x, y, degree)
+            my_lr = MyRidge(
+                theta[(degree - 1) * 6 + lambda_].reshape(-1, 1), lambda_=j / 5
+            )
             y_hat = my_lr.predict_(x)
 
             axis[i].scatter(
