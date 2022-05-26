@@ -163,5 +163,3 @@ if __name__ == "__main__":
             )
         axis[i].legend()
     plt.show()
-
-# TODO fix wander matrix + diff mse train validation
