@@ -99,7 +99,7 @@ if __name__ == "__main__":
     diff = abs(mse_train - mse_validation)
     (degree, lambda_) = np.where(diff == np.min(diff))
     (degree, lambda_) = (int(degree[0]), int(lambda_[0]))
-    print("best hypothesis: degree", degree, "lambda", lambda_ / 5)
+    print("best hypothesis: degree", degree + 1, "lambda", lambda_ / 5)
 
     x_test_ = vander_matrix(x_test, y_test, degree + 1)
     my_lr = MyRidge(theta[degree * 6 + lambda_].reshape(-1, 1), lambda_=lambda_ / 5)
