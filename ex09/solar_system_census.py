@@ -211,7 +211,8 @@ if __name__ == "__main__":
     df = np.hstack((data[:, 1:], planets[:, 1:]))
     for i in range(df.shape[1] - 1):
         df[:, [i]] = zscore(df[:, [i]])
-    (x, x_test, y, y_test) = data_spliter(df[:, :-1], df[:, [-1]], 0.7)
+    (x, x_test, y, y_test) = data_spliter(df[:, :-1], df[:, [-1]], 0.9)
+    (x, x_validation, y, y_validation) = data_spliter(x, y, 0.7)
 
     thetas = []
     for el in models:
@@ -220,7 +221,7 @@ if __name__ == "__main__":
 
     count = 0
     f1_score = []
-    f1_score_test = []
+    f1_score_validation = []
     for j in range(6):
         for zipcode in range(4):
             mlr = MyLogisticRegression(
@@ -237,27 +238,24 @@ if __name__ == "__main__":
                 for i in x_pred
             ]
         ).reshape(-1, 1)
-        print("lambda =", j / 5)
         f1_score.append(mlr.f1_score_(y, y_hat))
+        print("lambda =", j / 5)
         print("train", f1_score[j])
 
-        x_pred_test = np.insert(x_test, 0, values=1.0, axis=1).astype(float)
-        y_hat_test = np.array(
+        x_pred_validation = np.insert(x_validation, 0, values=1.0, axis=1).astype(float)
+        y_hat_validation = np.array(
             [
                 max(
                     (i @ np.array(thetas[zipcode + count]), zipcode)
                     for zipcode in range(4)
                 )[1]
-                for i in x_pred_test
+                for i in x_pred_validation
             ]
         ).reshape(-1, 1)
-        f1_score_test.append(mlr.f1_score_(y_test, y_hat_test))
-        print("test ", f1_score_test[j], "\n")
+        f1_score_validation.append(mlr.f1_score_(y_validation, y_hat_validation))
+        print("validation", f1_score_validation[j], "\n")
 
         count += 4
-
-    j = f1_score_test.index(max(f1_score_test))
-    print("best value for lambda is", j / 5)
 
     plt.xlabel("lambda")
     plt.ylabel("f1_score")
@@ -271,19 +269,22 @@ if __name__ == "__main__":
     )
     plt.bar(
         np.arange(0, 1.2, 0.2),
-        f1_score_test,
+        f1_score_validation,
         width=0.1,
         edgecolor="darkorange",
         color="None",
-        label="test",
+        label="validation",
     )
     plt.legend()
     plt.show()
 
+    lambda_ = f1_score_validation.index(max(f1_score_validation)) / 5
+    print("best value for lambda is", lambda_)
+
     thetas = []
     for zipcode in range(4):
         mlr = MyLogisticRegression(
-            np.ones(x.shape[1] + 1).reshape(-1, 1), lambda_=j / 5
+            np.ones(x.shape[1] + 1).reshape(-1, 1), lambda_=lambda_
         )
         y_ones = np.where(y == zipcode, 1, 0)
         thetas.append(mlr.fit_(x, y_ones))
