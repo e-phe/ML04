@@ -204,7 +204,7 @@ if __name__ == "__main__":
     df = np.hstack((data[:, 1:], planets[:, 1:]))
     for i in range(df.shape[1] - 1):
         df[:, [i]] = zscore(df[:, [i]])
-    (x, x_test, y, y_test) = data_spliter(df[:, :-1], df[:, [-1]], 0.7)
+    (x, x_validation, y, y_validation) = data_spliter(df[:, :-1], df[:, [-1]], 0.7)
 
     thetas = []
     pd_thetas = []
@@ -228,13 +228,13 @@ if __name__ == "__main__":
         print("lambda =", j / 5)
         print(mlr.f1_score_(y, y_hat))
 
-        x_pred_test = np.insert(x_test, 0, values=1.0, axis=1).astype(float)
-        y_hat_test = np.array(
+        x_pred_validation = np.insert(x_validation, 0, values=1.0, axis=1).astype(float)
+        y_hat_validation = np.array(
             [
                 max((i @ np.array(thetas[zipcode]), zipcode) for zipcode in range(4))[1]
-                for i in x_pred_test
+                for i in x_pred_validation
             ]
         ).reshape(-1, 1)
-        print(mlr.f1_score_(y_test, y_hat_test))
+        print(mlr.f1_score_(y_validation, y_hat_validation))
 
     pd.DataFrame(pd_thetas).to_csv("models.csv", index=None)
